@@ -1,0 +1,200 @@
+<div class="cell code" data-execution_count="1">
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="im">import</span> ast</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co"># Load the dataset</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>data <span class="op">=</span> pd.read_csv(<span class="st">&quot;TRADES_CopyTr_90D_ROI.csv&quot;</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>data</span></code></pre></div>
+<div class="output execute_result" data-execution_count="1">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Port_IDs</th>
+      <th>Trade_History</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3925368433214965504</td>
+      <td>[{'time': 1718899656000, 'symbol': 'SOLUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4002413037164645377</td>
+      <td>[{'time': 1718980078000, 'symbol': 'NEARUSDT',...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3923766029921022977</td>
+      <td>[{'time': 1718677164000, 'symbol': 'ETHUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3994879592543698688</td>
+      <td>[{'time': 1718678214000, 'symbol': 'ETHUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3926423286576838657</td>
+      <td>[{'time': 1718979615000, 'symbol': 'ETHUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>145</th>
+      <td>4000222729738650369</td>
+      <td>[{'time': 1718982068000, 'symbol': 'ARKMUSDT',...</td>
+    </tr>
+    <tr>
+      <th>146</th>
+      <td>3998659472131949824</td>
+      <td>[{'time': 1718979385000, 'symbol': 'BTCUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>4028701921959171840</td>
+      <td>[{'time': 1718984241000, 'symbol': 'BTCUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>4014818740371615232</td>
+      <td>[{'time': 1718983357000, 'symbol': 'SOLUSDT', ...</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>3768170840939476993</td>
+      <td>[{'time': 1718977395000, 'symbol': 'BNBUSDT', ...</td>
+    </tr>
+  </tbody>
+</table>
+<p>150 rows × 2 columns</p>
+</div>
+</div>
+</div>
+<div class="cell code" data-execution_count="2">
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co"># Function to parse Trade_History</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">def</span> parse_trade_history(trade_history):</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="cf">try</span>:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>        trades <span class="op">=</span> ast.literal_eval(trade_history)  <span class="co"># Convert string to list of dictionaries</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>        <span class="cf">return</span> pd.DataFrame(trades)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    <span class="cf">except</span>:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>        <span class="cf">return</span> pd.DataFrame()</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="3">
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># Expand Trade_History into multiple rows</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>data_expanded <span class="op">=</span> data.<span class="bu">apply</span>(<span class="kw">lambda</span> row: parse_trade_history(row[<span class="st">&#39;Trade_History&#39;</span>]).assign(Port_IDs<span class="op">=</span>row[<span class="st">&#39;Port_IDs&#39;</span>]), axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>data_expanded <span class="op">=</span> pd.concat(data_expanded.values, ignore_index<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="4">
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># Convert timestamp to datetime</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>data_expanded[<span class="st">&#39;time&#39;</span>] <span class="op">=</span> pd.to_datetime(data_expanded[<span class="st">&#39;time&#39;</span>])</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="5">
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co"># Handle missing values (if any)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>data_expanded <span class="op">=</span> data_expanded.dropna()</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="6">
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># Classify trades</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="kw">def</span> classify_trade(row):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>    <span class="cf">if</span> row[<span class="st">&#39;side&#39;</span>] <span class="op">==</span> <span class="st">&#39;BUY&#39;</span> <span class="kw">and</span> row[<span class="st">&#39;positionSide&#39;</span>] <span class="op">==</span> <span class="st">&#39;LONG&#39;</span>:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>        <span class="cf">return</span> <span class="st">&#39;long_open&#39;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>    <span class="cf">elif</span> row[<span class="st">&#39;side&#39;</span>] <span class="op">==</span> <span class="st">&#39;SELL&#39;</span> <span class="kw">and</span> row[<span class="st">&#39;positionSide&#39;</span>] <span class="op">==</span> <span class="st">&#39;LONG&#39;</span>:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>        <span class="cf">return</span> <span class="st">&#39;long_close&#39;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>    <span class="cf">elif</span> row[<span class="st">&#39;side&#39;</span>] <span class="op">==</span> <span class="st">&#39;BUY&#39;</span> <span class="kw">and</span> row[<span class="st">&#39;positionSide&#39;</span>] <span class="op">==</span> <span class="st">&#39;SHORT&#39;</span>:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>        <span class="cf">return</span> <span class="st">&#39;short_close&#39;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>    <span class="cf">elif</span> row[<span class="st">&#39;side&#39;</span>] <span class="op">==</span> <span class="st">&#39;SELL&#39;</span> <span class="kw">and</span> row[<span class="st">&#39;positionSide&#39;</span>] <span class="op">==</span> <span class="st">&#39;SHORT&#39;</span>:</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>        <span class="cf">return</span> <span class="st">&#39;short_open&#39;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>    <span class="cf">return</span> <span class="st">&#39;unknown&#39;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>data_expanded[<span class="st">&#39;trade_type&#39;</span>] <span class="op">=</span> data_expanded.<span class="bu">apply</span>(classify_trade, axis<span class="op">=</span><span class="dv">1</span>)</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="7">
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="co"># Aggregate data per account</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>account_metrics <span class="op">=</span> data_expanded.groupby(<span class="st">&#39;Port_IDs&#39;</span>).agg(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>    total_positions<span class="op">=</span>(<span class="st">&#39;trade_type&#39;</span>, <span class="st">&#39;count&#39;</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>    win_positions<span class="op">=</span>(<span class="st">&#39;realizedProfit&#39;</span>, <span class="kw">lambda</span> x: (x <span class="op">&gt;</span> <span class="dv">0</span>).<span class="bu">sum</span>()),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>    total_profit<span class="op">=</span>(<span class="st">&#39;realizedProfit&#39;</span>, <span class="st">&#39;sum&#39;</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>    avg_daily_return<span class="op">=</span>(<span class="st">&#39;realizedProfit&#39;</span>, <span class="st">&#39;mean&#39;</span>),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>    std_dev_return<span class="op">=</span>(<span class="st">&#39;realizedProfit&#39;</span>, <span class="st">&#39;std&#39;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>).reset_index()</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="8">
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="co"># Calculate Win Rate</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>account_metrics[<span class="st">&#39;win_rate&#39;</span>] <span class="op">=</span> (account_metrics[<span class="st">&#39;win_positions&#39;</span>] <span class="op">/</span> account_metrics[<span class="st">&#39;total_positions&#39;</span>]) <span class="op">*</span> <span class="dv">100</span></span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="9">
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="co"># Calculate ROI (assumption: initial investment is total trade volume per account)</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>total_trade_volume <span class="op">=</span> data_expanded.groupby(<span class="st">&#39;Port_IDs&#39;</span>)[<span class="st">&#39;quantity&#39;</span>].<span class="bu">sum</span>()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>account_metrics[<span class="st">&#39;ROI&#39;</span>] <span class="op">=</span> (account_metrics[<span class="st">&#39;total_profit&#39;</span>] <span class="op">/</span> total_trade_volume) <span class="op">*</span> <span class="dv">100</span></span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="10">
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="co"># Calculate Sharpe Ratio (assuming risk-free rate = 0)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>account_metrics[<span class="st">&#39;sharpe_ratio&#39;</span>] <span class="op">=</span> account_metrics[<span class="st">&#39;avg_daily_return&#39;</span>] <span class="op">/</span> account_metrics[<span class="st">&#39;std_dev_return&#39;</span>]</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="11">
+<div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="co"># Calculate Maximum Drawdown (MDD)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="kw">def</span> max_drawdown(profit_series):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>    cum_returns <span class="op">=</span> profit_series.cumsum()</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>    peak <span class="op">=</span> cum_returns.cummax()</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>    drawdown <span class="op">=</span> (cum_returns <span class="op">-</span> peak) <span class="op">/</span> peak</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>    <span class="cf">return</span> drawdown.<span class="bu">min</span>()</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a>mdd_values <span class="op">=</span> data_expanded.groupby(<span class="st">&#39;Port_IDs&#39;</span>)[<span class="st">&#39;realizedProfit&#39;</span>].<span class="bu">apply</span>(max_drawdown)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a>account_metrics[<span class="st">&#39;max_drawdown&#39;</span>] <span class="op">=</span> mdd_values.values</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="12">
+<div class="sourceCode" id="cb12"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="co"># Normalize and Rank Metrics</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>metrics_weights <span class="op">=</span> {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>    <span class="st">&#39;ROI&#39;</span>: <span class="fl">0.3</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>    <span class="st">&#39;total_profit&#39;</span>: <span class="fl">0.25</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>    <span class="st">&#39;win_rate&#39;</span>: <span class="fl">0.2</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>    <span class="st">&#39;sharpe_ratio&#39;</span>: <span class="fl">0.15</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>    <span class="st">&#39;max_drawdown&#39;</span>: <span class="op">-</span><span class="fl">0.1</span>  <span class="co"># Negative weight since lower is better</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>}</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a><span class="cf">for</span> metric, weight <span class="kw">in</span> metrics_weights.items():</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>    account_metrics[metric <span class="op">+</span> <span class="st">&#39;_normalized&#39;</span>] <span class="op">=</span> (account_metrics[metric] <span class="op">-</span> account_metrics[metric].<span class="bu">min</span>()) <span class="op">/</span> (account_metrics[metric].<span class="bu">max</span>() <span class="op">-</span> account_metrics[metric].<span class="bu">min</span>())</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>account_metrics[<span class="st">&#39;score&#39;</span>] <span class="op">=</span> <span class="bu">sum</span>(account_metrics[metric <span class="op">+</span> <span class="st">&#39;_normalized&#39;</span>] <span class="op">*</span> weight <span class="cf">for</span> metric, weight <span class="kw">in</span> metrics_weights.items())</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="13">
+<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="co"># Rank accounts based on final score</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>account_metrics <span class="op">=</span> account_metrics.sort_values(by<span class="op">=</span><span class="st">&#39;score&#39;</span>, ascending<span class="op">=</span><span class="va">False</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="14">
+<div class="sourceCode" id="cb14"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="co"># Select top 20 accounts</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>top_20_accounts <span class="op">=</span> account_metrics.head(<span class="dv">20</span>)</span></code></pre></div>
+</div>
+<div class="cell code" data-execution_count="15">
+<div class="sourceCode" id="cb15"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="co"># Export Results</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a>account_metrics.to_csv(<span class="st">&quot;binance_trade_analysis.csv&quot;</span>, index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a>top_20_accounts.to_csv(<span class="st">&quot;top_20_accounts.csv&quot;</span>, index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a><span class="bu">print</span>(<span class="st">&quot;Analysis complete. Results saved.&quot;</span>)</span></code></pre></div>
+<div class="output stream stdout">
+<pre><code>Analysis complete. Results saved.
+</code></pre>
+</div>
+</div>
+<div class="cell code">
+<div class="sourceCode" id="cb17"><pre class="sourceCode python"><code class="sourceCode python"></code></pre></div>
+</div>
